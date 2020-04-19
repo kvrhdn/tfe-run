@@ -15,7 +15,7 @@ inputs:
     required: true
   organization:
     description: |
-      Name of the organization on Terraform Cloud, default to the owner of the GitHub repository.
+      Name of the organization on Terraform Cloud, defaults to the owner of the GitHub repository.
     required: false
     default: ${{ github.repository_owner }}
   workspace:
