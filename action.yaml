@@ -1,0 +1,50 @@
+name: tfe-run
+author: Koenraad Verheyden
+description: Create a new run on Terraform Cloud
+
+branding:
+  icon: 'tool'
+  color: 'purple'
+
+inputs:
+  token:
+    description: |
+      Token used to communicating with the Terraform Cloud API. Must be a user or team api token.
+      
+      See also: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
+    required: true
+  organization:
+    description: |
+      Name of the organization on Terraform Cloud, default to the owner of the GitHub repository.
+    required: false
+    default: ${{ github.repository_owner }}
+  workspace:
+    description: |
+      Name of the workspace on Terraform Cloud.
+    required: true
+  speculative:
+    description: |
+      Whether to run a speculative plan.
+
+      See also: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
+    required: false
+    default: false
+  message:
+    description: |
+      Optional message to use as name of the run.
+    required: false
+    default: |
+      Queued by GitHub Actions (commit: ${{ github.sha }})
+  directory:
+    description: |
+      The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore.
+    required: false
+    default: ./
+
+outputs:
+  run-url:
+    description: URL of the run on Terraform Cloud.
+
+runs:
+  using: docker
+  image: Dockerfile
