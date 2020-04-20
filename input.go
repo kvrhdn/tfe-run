@@ -1,39 +1,68 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"strconv"
 
 	gha "github.com/sethvargo/go-githubactions"
 )
 
 func readInput() input {
-	token := getInputOrFail("token")
+	isGitHubActions := os.Getenv("GITHUB_ACTIONS")
+
+	if isGitHubActions == "true" {
+		return readInputGitHubActions()
+	}
+	return readInputLocal()
+}
+
+// Read input from the GitHub Actions run environment
+func readInputGitHubActions() input {
+	token := getInputOrExit("token")
 	gha.AddMask(token)
 
-	organization := getInputOrFail("organization")
-	workspace := getInputOrFail("workspace")
-	message := getInputOrFail("message")
-	directory := getInputOrFail("directory")
+	organization := getInputOrExit("organization")
+	workspace := getInputOrExit("workspace")
+	message := getInputOrExit("message")
+	directory := getInputOrExit("directory")
 
-	speculative, err := strconv.ParseBool(getInputOrFail("speculative"))
+	speculative, err := strconv.ParseBool(getInputOrExit("speculative"))
 	if err != nil {
-		exitError(err)
+		exitErrorf("Could not parse input 'speculative' as bool: %v\n", err)
 	}
 
 	return input{
-		token:        token,
-		organization: organization,
-		workspace:    workspace,
-		message:      message,
-		directory:    directory,
-		speculative:  speculative,
+		Token:        token,
+		Organization: organization,
+		Workspace:    workspace,
+		Message:      message,
+		Directory:    directory,
+		Speculative:  speculative,
 	}
 }
 
-func getInputOrFail(identifier string) string {
+func getInputOrExit(identifier string) string {
 	val := gha.GetInput(identifier)
 	if val == "" {
-		exitErrorf("missing input '%v'", identifier)
+		exitErrorf("Missing input '%v'\n", identifier)
 	}
 	return val
+}
+
+// Read input from a local development environment
+func readInputLocal() input {
+	bytes, err := ioutil.ReadFile("input.json")
+	if err != nil {
+		exitErrorf("Could not read 'input.json': %v\n", err)
+	}
+
+	var in input
+	err = json.Unmarshal(bytes, &in)
+	if err != nil {
+		exitErrorf("Could not parse 'input.json': %v\n", err)
+	}
+
+	return in
 }

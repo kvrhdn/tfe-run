@@ -4,66 +4,73 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 
 	tfe "github.com/hashicorp/go-tfe"
 	gha "github.com/sethvargo/go-githubactions"
 )
 
 type input struct {
-	token        string
-	organization string
-	workspace    string
-	message      string
-	directory    string
-	speculative  bool
+	Token        string `json:"token"`
+	Organization string `json:"organization"`
+	Workspace    string `json:"workspace"`
+	Message      string `json:"message"`
+	Directory    string `json:"directory"`
+	Speculative  bool   `json:"speculative"`
 }
 
 func main() {
 	in := readInput()
 
 	config := &tfe.Config{
-		Token: in.token,
+		Token: in.Token,
 	}
 	client, err := tfe.NewClient(config)
 	if err != nil {
-		exitError(err)
+		exitErrorf("Could not create a new TFE client: %v\n", err)
 	}
 
 	ctx := context.Background()
 
-	w, err := client.Workspaces.Read(ctx, in.organization, in.workspace)
+	w, err := client.Workspaces.Read(ctx, in.Organization, in.Workspace)
 	if err != nil {
-		gha.Fatalf("%v", err)
+		exitErrorf("Could not retrieve workspace '%v/%v': %v\n", in.Organization, in.Workspace, err)
 	}
 
 	cvOptions := tfe.ConfigurationVersionCreateOptions{
 		// Don't automatically queue the runs, we create the run manually to set the message
 		AutoQueueRuns: pb(false),
-		Speculative:   &in.speculative,
+		Speculative:   &in.Speculative,
 	}
 	cv, err := client.ConfigurationVersions.Create(ctx, w.ID, cvOptions)
 	if err != nil {
-		gha.Fatalf("%v", err)
+		if err.Error() == "resource not found" {
+			exitErrorf("Could not create configuration version (not found), this might happen if you are not using a user or team API token\n")
+		} else {
+			exitErrorf("Could not create a new configuration version: %v\n", err)
+		}
 	}
 
-	err = client.ConfigurationVersions.Upload(ctx, cv.UploadURL, in.directory)
+	fmt.Print("Uploading directory...\n")
+
+	err = client.ConfigurationVersions.Upload(ctx, cv.UploadURL, in.Directory)
 	if err != nil {
-		gha.Fatalf("%v", err)
+		exitErrorf("Could not upload directory '%v': %v\n", in.Directory, err)
 	}
 
 	rOptions := tfe.RunCreateOptions{
 		Workspace:            w,
 		ConfigurationVersion: cv,
-		Message:              &in.message,
+		Message:              &in.Message,
 	}
 	r, err := client.Runs.Create(ctx, rOptions)
 	if err != nil {
-		gha.Fatalf("%v", err)
+		exitErrorf("%v", err)
 	}
 
 	runURL := fmt.Sprintf(
 		"https://app.terraform.io/app/%v/workspaces/%v/runs/%v",
-		in.organization, in.workspace, r.ID,
+		in.Organization, in.Workspace, r.ID,
 	)
 
 	fmt.Printf("Run %v has been queued\n", r.ID)
@@ -71,11 +78,12 @@ func main() {
 
 	gha.SetOutput("run-url", runURL)
 
-	// If auto apply isn't enabled a run can hang for a long time, even if this
-	// wouldn't change anything the previous could still be hanging.
-	// We don't want to wait for this.
-	if w.AutoApply == false {
-		fmt.Print("Auto apply is not enabled, won't wait for completion\n")
+	// If auto apply isn't enabled a run could hang for a long time, even if
+	// the run itself wouldn't change anything the previous run could still be
+	// blocked waiting for confirmation.
+	// Speculative runs can always continue it seems.
+	if !in.Speculative && !w.AutoApply {
+		fmt.Print("Auto apply isn't enabled, won't wait for completion.\n")
 		return
 	}
 
@@ -83,7 +91,7 @@ func main() {
 	for {
 		r, err = client.Runs.Read(ctx, r.ID)
 		if err != nil {
-			gha.Fatalf("%v", err)
+			exitErrorf("Could not read run '%v': %v\n", r.ID, err)
 		}
 
 		if prevStatus != r.Status {
@@ -94,16 +102,18 @@ func main() {
 		switch r.Status {
 
 		case tfe.RunPlannedAndFinished:
-			exit("Run has been planned, nothing to do")
+			gha.SetOutput("has-changes", strconv.FormatBool(r.HasChanges))
+			exit("Run has been planned, nothing to do\n")
 		case tfe.RunApplied:
-			exit("Run has been applied!")
+			gha.SetOutput("has-changes", strconv.FormatBool(r.HasChanges))
+			exit("Run has been applied!\n")
 
 		case tfe.RunCanceled:
-			exitErrorf("Run %v has been canceled", r.ID)
+			exitErrorf("Run %v has been canceled\n", r.ID)
 		case tfe.RunDiscarded:
-			exitErrorf("Run %v has been discarded", r.ID)
+			exitErrorf("Run %v has been discarded\n", r.ID)
 		case tfe.RunErrored:
-			exitErrorf("Run %v has errored", r.ID)
+			exitErrorf("Run %v has errored\n", r.ID)
 		}
 	}
 }
@@ -119,9 +129,11 @@ func exit(v interface{}) {
 }
 
 func exitError(v interface{}) {
-	gha.Fatalf("%v", v)
+	fmt.Print(v)
+	os.Exit(1)
 }
 
 func exitErrorf(msg string, args ...interface{}) {
-	gha.Fatalf(msg, args)
+	fmt.Printf(msg, args...)
+	os.Exit(1)
 }

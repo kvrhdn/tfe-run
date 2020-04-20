@@ -44,6 +44,8 @@ inputs:
 outputs:
   run-url:
     description: URL of the run on Terraform Cloud.
+  has-changes:
+    description: Whether a speculative plan has changes or not.
 
 runs:
   using: docker

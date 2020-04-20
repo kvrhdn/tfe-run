@@ -47,9 +47,10 @@ Name           | Required | Description                                         
 
 ### Outputs
 
-Name      | Description                       | Type
-----------|-----------------------------------|-----
-`run-url` | URL of the run on Terraform Cloud | string
+Name          | Description                       | Type
+--------------|-----------------------------------|-----
+`run-url`     | URL of the run on Terraform Cloud | string
+`has-changes` | Whether the run has changes.      | bool (`'true'` or `'false'`)
 
 ## How does it work?
 
@@ -67,19 +68,40 @@ If the workspace has [auto apply enabled][tfe-auto-apply], the action will keep 
 [terraformignore]: https://www.terraform.io/docs/backends/types/remote.html#excluding-files-from-upload-with-terraformignore
 [tfe-auto-apply]: https://www.terraform.io/docs/cloud/workspaces/settings.html#auto-apply-and-manual-apply
 
-### Nice to have - future improvements - TODO's
+## License
+
+This Action is distributed under the terms of the MIT license, see [LICENSE](./LICENSE) for details.
+
+## Local development
+
+Easiest way to work on this locally is to run the Go program directly.
+
+First create a file `input.json` which contains the inputs which are otherwise provided by GitHub Actions. Make sure _all inputs_ are present, missing inputs will cause inconsist errors.
+
+```json
+{
+    "token": "...",
+    "organization": "kvrhdn",
+    "workspace": "kvrhdn_dev",
+    "speculative": false,
+    "message": "Queued locally using tfe-run",
+    "directory": "../kvrhdn.dev/"
+}
+```
+
+Next, run the program locally:
+
+```
+go run .
+```
+
+## Nice to have - future improvements - TODO's
 
 TODO's
 
-- Speculative run: publish link to run somewhere
-- Output workflow URL so it can be used by the next steps
 - Support setting variables
 
 Nice to have
 
 - Determine organization and workspace based upon the terraform config
 - Rewrite this action in node.js, this will speed up execution.
-
-## License
-
-This Action is distributed under the terms of the MIT license, see [LICENSE](./LICENSE) for details.
