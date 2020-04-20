@@ -58,6 +58,8 @@ func main() {
 		exitErrorf("Could not upload directory '%v': %v\n", in.Directory, err)
 	}
 
+	fmt.Print("Done uploading.\n")
+
 	rOptions := tfe.RunCreateOptions{
 		Workspace:            w,
 		ConfigurationVersion: cv,
@@ -65,7 +67,7 @@ func main() {
 	}
 	r, err := client.Runs.Create(ctx, rOptions)
 	if err != nil {
-		exitErrorf("%v", err)
+		exitErrorf("Could not create run: %v", err)
 	}
 
 	runURL := fmt.Sprintf(
