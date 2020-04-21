@@ -67,7 +67,7 @@ func main() {
 	}
 	r, err := client.Runs.Create(ctx, rOptions)
 	if err != nil {
-		exitErrorf("Could not create run: %v\n\tOptions used: %#v", err, rOptions)
+		exitErrorf("Could not create run: %v", err)
 	}
 
 	runURL := fmt.Sprintf(
