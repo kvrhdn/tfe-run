@@ -1,0 +1,49 @@
+name: Integration
+on: [push]
+
+jobs:
+  integration:
+    name: Integration
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+        # TODO support providing variable as input to tfe-run
+      - name: Write run.auto.tfvars
+        run: |
+          echo "run_number = ${{ github.run_number }}" > integration/run.auto.tfvars
+
+      - uses: kvrhdn/tfe-run@master
+        with:
+          token: ${{ secrets.TFE_TOKEN }}
+          workspace: tfe-run-integration
+          message: "GHA run ${{ github.run_number }}"
+          speculative: true
+        id: plan
+
+      - name: Assert speculative plan has changes
+        if: steps.plan.outputs.has-changes == 'false'
+        run: |
+          echo "Expected speculative plan to have changes, but had not"
+          exit 1
+
+      - uses: kvrhdn/tfe-run@master
+        with:
+          token: ${{ secrets.TFE_TOKEN }}
+          workspace: tfe-run-integration
+          message: "GHA run ${{ github.run_number }}"
+
+        # TODO support retrieve terraform outputs from tfe-run to get URL of the bucket
+      - name: Assert run number is published to S3
+        run: |
+          EXPECTED="GitHub Actions run number: ${{ github.run_number }}"
+          ACTUAL=$(curl http://tfe-run-integration.s3-website.eu-central-1.amazonaws.com)
+
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "Data on S3 does not match with expectations!"
+            echo ""
+            echo "Got:      '$ACTUAL'"
+            echo "Expected: '$EXPECTED'"
+            exit 1
+          fi

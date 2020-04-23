@@ -1,2 +1,5 @@
 # input parameters for local development
 input.json
+
+# terraform specific
+.terraform
