@@ -43,13 +43,13 @@ func run() error {
 
 	cvOptions := tfe.ConfigurationVersionCreateOptions{
 		// Don't automatically queue the runs, we create the run manually to set the message
-		AutoQueueRuns: pb(false),
+		AutoQueueRuns: tfe.Bool(false),
 		Speculative:   &input.Speculative,
 	}
 	cv, err := client.ConfigurationVersions.Create(ctx, w.ID, cvOptions)
 	if err != nil {
-		if err.Error() == "resource not found" {
-			return fmt.Errorf("could not create configuration version (not found), this might happen if you are not using a user or team API token")
+		if err == tfe.ErrResourceNotFound {
+			return fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
 		}
 		return fmt.Errorf("could not create a new configuration version: %w", err)
 	}
@@ -123,9 +123,4 @@ func run() error {
 			return fmt.Errorf("run %v has errored", r.ID)
 		}
 	}
-}
-
-func pb(value bool) *bool {
-	local := value
-	return &local
 }
