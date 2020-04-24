@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/go-tfe"
 	"github.com/kvrhdn/tfe-run/io"
@@ -100,20 +101,23 @@ func run() error {
 		}
 
 		if prevStatus != r.Status {
-			fmt.Printf("Run status: %v\n", r.Status)
+			fmt.Printf("Run status: %v\n", prettyPrint(r.Status))
 			prevStatus = r.Status
 		}
+
+		if isEndStatus(r.Status) {
+			break
+		}
+	}
+
+	output.HasChanges = r.HasChanges
 
 		switch r.Status {
 
 		case tfe.RunPlannedAndFinished:
-			output.HasChanges = r.HasChanges
 			fmt.Println("Run has been planned, nothing to do.")
-			return nil
 		case tfe.RunApplied:
-			output.HasChanges = r.HasChanges
 			fmt.Println("Run has been applied!")
-			return nil
 
 		case tfe.RunCanceled:
 			return fmt.Errorf("run %v has been canceled", r.ID)
@@ -122,5 +126,44 @@ func run() error {
 		case tfe.RunErrored:
 			return fmt.Errorf("run %v has errored", r.ID)
 		}
+
+	return nil
 	}
+
+func isEndStatus(r tfe.RunStatus) bool {
+	// All run statuses: https://github.com/hashicorp/go-tfe/blob/v0.7.0/run.go#L46
+	switch r {
+	case
+		tfe.RunPlannedAndFinished,
+		tfe.RunApplied,
+		tfe.RunCanceled,
+		tfe.RunDiscarded,
+		tfe.RunErrored:
+		return true
+
+	case
+		tfe.RunPlanQueued,
+		tfe.RunPlanning,
+		tfe.RunPlanned,
+		tfe.RunPending,
+		tfe.RunConfirmed,
+		tfe.RunApplyQueued,
+		tfe.RunApplying:
+		return false
+
+	case
+		tfe.RunCostEstimating,
+		tfe.RunCostEstimated,
+		tfe.RunPolicyChecked,
+		tfe.RunPolicyChecking,
+		tfe.RunPolicyOverride,
+		tfe.RunPolicySoftFailed:
+		fmt.Printf("Run is in unexpected / unsupported status %v, finishing process", r)
+		return true
+	}
+	return true
+}
+
+func prettyPrint(r tfe.RunStatus) string {
+	return strings.ReplaceAll(fmt.Sprintf("%v", r), "_", " ")
 }
