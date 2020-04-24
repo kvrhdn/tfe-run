@@ -113,6 +113,7 @@ func run() error {
 		case tfe.RunApplied:
 			output.HasChanges = r.HasChanges
 			fmt.Println("Run has been applied!")
+			return nil
 
 		case tfe.RunCanceled:
 			return fmt.Errorf("run %v has been canceled", r.ID)
