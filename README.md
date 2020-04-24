@@ -1,5 +1,8 @@
 # `tfe-run` Action
 
+![CI](https://github.com/kvrhdn/tfe-run/workflows/CI/badge.svg)
+![Integration](https://github.com/kvrhdn/tfe-run/workflows/Integration/badge.svg)
+
 This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Cloud into your GitHub Actions workflow.
 
 ⚠️ This action is still in development, for now use the version from the master branch `kvrhdn/tfe-run@master`. I plan to introduce a `v1` tag eventually.
