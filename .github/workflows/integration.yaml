@@ -18,7 +18,6 @@ jobs:
         with:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run-integration
-          message: "GHA run ${{ github.run_number }}"
           speculative: true
         id: plan
 
@@ -32,7 +31,7 @@ jobs:
         with:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run-integration
-          message: "GHA run ${{ github.run_number }}"
+          message: "Integration run ${{ github.run_number }}"
 
         # TODO support retrieve terraform outputs from tfe-run to get URL of the bucket
       - name: Assert run number is published to S3
