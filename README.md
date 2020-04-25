@@ -98,14 +98,3 @@ Next, run the program locally:
 ```
 go run .
 ```
-
-## Nice to have - future improvements - TODO's
-
-TODO's
-
-- Support setting variables
-
-Nice to have
-
-- Determine organization and workspace based upon the terraform config
-- Rewrite this action in node.js, this will speed up execution.
