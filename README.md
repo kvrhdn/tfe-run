@@ -51,10 +51,11 @@ Name           | Required | Description                                         
 
 ### Outputs
 
-Name          | Description                       | Type
---------------|-----------------------------------|-----
-`run-url`     | URL of the run on Terraform Cloud | string
-`has-changes` | Whether the run has changes.      | bool (`'true'` or `'false'`)
+Name          | Description                                                                                       | Type
+--------------|---------------------------------------------------------------------------------------------------|-----
+`run-url`     | URL of the run on Terraform Cloud                                                                 | string
+`has-changes` | Whether the run has changes.                                                                      | bool (`'true'` or `'false'`)
+`tf-**`       | Outputs from the current Terraform state, prefixed with `tf-`. Only set for non-speculative runs. | string
 
 ## How does it work?
 

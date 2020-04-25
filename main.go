@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -157,6 +158,14 @@ func run(input io.Input) (output io.Output, err error) {
 		err = fmt.Errorf("run %v has errored", r.ID)
 	}
 
+	if err != nil {
+		return
+	}
+
+	if !input.Speculative {
+		output.TfOutputs, err = retrieveOutputs(ctx, client, w.ID)
+	}
+
 	return
 }
 
@@ -196,4 +205,46 @@ func isEndStatus(r tfe.RunStatus) bool {
 
 func prettyPrint(r tfe.RunStatus) string {
 	return strings.ReplaceAll(fmt.Sprintf("%v", r), "_", " ")
+}
+
+type minimalTerraformState struct {
+	Outputs map[string]terraformOutput `json:"outputs"`
+}
+
+type terraformOutput struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+func retrieveOutputs(ctx context.Context, client *tfe.Client, workspaceID string) (outputs map[string]string, err error) {
+	s, err := client.StateVersions.Current(ctx, workspaceID)
+	if err != nil {
+		err = fmt.Errorf("could not fetch current state: %w", err)
+		return
+	}
+
+	bytes, err := client.StateVersions.Download(ctx, s.DownloadURL)
+	if err != nil {
+		err = fmt.Errorf("could not download state version: %w", err)
+		return
+	}
+
+	var state minimalTerraformState
+	err = json.Unmarshal(bytes, &state)
+	if err != nil {
+		err = fmt.Errorf("could not parse state version: %w", err)
+		return
+	}
+
+	outputs = map[string]string{}
+	for k, v := range state.Outputs {
+		outputs[k] = v.Value
+	}
+
+	fmt.Printf("Outputs from current state:\n")
+	for k, v := range outputs {
+		fmt.Printf(" - %v: %v\n", k, v)
+	}
+
+	return
 }

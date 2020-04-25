@@ -50,6 +50,8 @@ outputs:
     description: URL of the run on Terraform Cloud.
   has-changes:
     description: Whether a speculative plan has changes or not.
+  tf-endpoint:
+    description: Temporary output for testing
 
 runs:
   using: docker

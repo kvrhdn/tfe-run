@@ -11,6 +11,7 @@ import (
 type Output struct {
 	RunURL     string
 	HasChanges bool
+	TfOutputs  map[string]string
 }
 
 // WriteOutput writes output.
@@ -18,9 +19,18 @@ func WriteOutput(output *Output) {
 	if gha.InGitHubActions() {
 		gha.WriteOutput("run-url", output.RunURL)
 		gha.WriteOutput("has-changes", strconv.FormatBool(output.HasChanges))
+
+		for k, v := range output.TfOutputs {
+			gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
+		}
 	} else {
 		fmt.Printf("Output:\n")
 		fmt.Printf(" - run-url:     %s\n", output.RunURL)
 		fmt.Printf(" - has-changes: %v\n", output.HasChanges)
+
+		fmt.Printf(" - tf outputs:\n")
+		for k, v := range output.TfOutputs {
+			fmt.Printf("   - %s: %s\n", k, v)
+		}
 	}
 }

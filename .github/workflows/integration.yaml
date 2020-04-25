@@ -79,12 +79,15 @@ jobs:
           message: "Integration run ${{ github.run_number }}"
           tf-vars: |
             run_number = ${{ github.run_number }}
+        id: apply
 
-        # TODO support retrieve terraform outputs from tfe-run to get URL of the bucket
       - name: Assert run number is published to S3
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+          S3_URL: ${{ steps.apply.outputs.tf-endpoint }}
         run: |
-          EXPECTED="GitHub Actions run number: ${{ github.run_number }}"
-          ACTUAL=$(curl http://tfe-run-integration.s3-website.eu-central-1.amazonaws.com)
+          EXPECTED="GitHub Actions run number: $RUN_NUMBER"
+          ACTUAL=$(curl $S3_URL)
 
           if [ "$EXPECTED" != "$ACTUAL" ]; then
             echo "Data on S3 does not match with expectations!"
