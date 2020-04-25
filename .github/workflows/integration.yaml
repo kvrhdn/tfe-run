@@ -24,6 +24,18 @@ jobs:
 
       - uses: actions/checkout@v2
 
+      - name: Set up buildevents file
+        run: |
+          echo github_workflow=${{ github.workflow }} >> ../buildevents.txt
+          echo github_run_number=${{ github.run_number }} >> ../buildevents.txt
+          echo github_event_name=${{ github.event_name }} >> ../buildevents.txt
+          echo github_sha=${{ github.sha }} >> ../buildevents.txt
+          echo github_ref=${{ github.ref }} >> ../buildbuildevents.txt
+
+          echo ::set-env name=BUILDEVENT_FILE::../buildevents.txt
+
+          cat ../buildevents.txt
+
       - name: Install Honeycomb's buildevents tool
         run: |
           sudo curl -L -o /usr/local/bin/buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
