@@ -112,23 +112,23 @@ func run() error {
 
 	output.HasChanges = r.HasChanges
 
-		switch r.Status {
+	switch r.Status {
 
-		case tfe.RunPlannedAndFinished:
-			fmt.Println("Run has been planned, nothing to do.")
-		case tfe.RunApplied:
-			fmt.Println("Run has been applied!")
+	case tfe.RunPlannedAndFinished:
+		fmt.Println("Run has been planned, nothing to do.")
+	case tfe.RunApplied:
+		fmt.Println("Run has been applied!")
 
-		case tfe.RunCanceled:
-			return fmt.Errorf("run %v has been canceled", r.ID)
-		case tfe.RunDiscarded:
-			return fmt.Errorf("run %v has been discarded", r.ID)
-		case tfe.RunErrored:
-			return fmt.Errorf("run %v has errored", r.ID)
-		}
+	case tfe.RunCanceled:
+		return fmt.Errorf("run %v has been canceled", r.ID)
+	case tfe.RunDiscarded:
+		return fmt.Errorf("run %v has been discarded", r.ID)
+	case tfe.RunErrored:
+		return fmt.Errorf("run %v has errored", r.ID)
+	}
 
 	return nil
-	}
+}
 
 func isEndStatus(r tfe.RunStatus) bool {
 	// All run statuses: https://github.com/hashicorp/go-tfe/blob/v0.7.0/run.go#L46

@@ -20,7 +20,7 @@ jobs:
 
       - run: go vet
 
-      - run: gofmt -d -e .
+      - run: test -z $(gofmt -l .)
 
   docker-build:
     name: Build Docker image (smoke test)
