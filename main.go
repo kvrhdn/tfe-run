@@ -66,6 +66,8 @@ func run(input io.Input) (output io.Output, err error) {
 		// persistent across runs which might cause undesired side-effects.
 		varsFile := filepath.Join(input.Directory, w.WorkingDirectory, "run.auto.tfvars")
 
+		fmt.Printf("Creating variables file %v\n", varsFile)
+
 		err = ioutil.WriteFile(varsFile, []byte(input.TfVars), 0644)
 		if err != nil {
 			err = fmt.Errorf("could not write run.auto.tfvars: %w", err)
