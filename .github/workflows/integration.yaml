@@ -9,8 +9,31 @@ jobs:
     name: Integration
     runs-on: ubuntu-latest
 
+    env:
+      BUILDEVENT_APIKEY: ${{ secrets.BUILDEVENT_APIKEY }}
+      BUILDEVENT_DATASET: "tfe-run_integration"
+      BUILDEVENT_CIPROVIDER: "github-actions"
+
     steps:
+      - name: Record build start
+        run: |
+          echo ::set-env name=BUILD_START::$(date +%s)
+
+          # Note: github.run_number does not change when re-run, this might cause issues when re-running workflows
+          echo ::set-env name=BUILD_ID::tfe-run_integration-${{ github.run_number }}
+
       - uses: actions/checkout@v2
+
+      - name: Install Honeycomb's buildevents tool
+        run: |
+          sudo curl -L -o /usr/local/bin/buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
+          sudo chmod 755 /usr/local/bin/buildevents
+
+      - name: Start step 'speculative-plan'
+        run: |
+          echo ::set-env name=STEP_ID::0
+          echo ::set-env name=STEP_START::$(date +%s)
+          echo ::set-env name=STEP_NAME::speculative-plan
 
       - uses: kvrhdn/tfe-run@master
         with:
@@ -26,6 +49,16 @@ jobs:
         run: |
           echo "Expected speculative plan to have changes, but had not"
           exit 1
+
+      - name: Wrap up step
+        run: |
+          buildevents step $BUILD_ID $STEP_ID $STEP_START $STEP_NAME
+
+      - name: Start step 'apply'
+        run: |
+          echo ::set-env name=STEP_ID::1
+          echo ::set-env name=STEP_START::$(date +%s)
+          echo ::set-env name=STEP_NAME::apply
 
       - uses: kvrhdn/tfe-run@master
         with:
@@ -48,3 +81,17 @@ jobs:
             echo "Expected: '$EXPECTED'"
             exit 1
           fi
+
+      - name: Wrap up step
+        run: |
+          buildevents step $BUILD_ID $STEP_ID $STEP_START $STEP_NAME
+
+      - name: Build and transmit buildevent trace
+        if: success()
+        run: |
+          buildevents build $BUILD_ID $BUILD_START success
+
+      - name: Build and transmit buildevent trace
+        if: failure()
+        run: |
+          buildevents build $BUILD_ID $BUILD_START failure
