@@ -17,7 +17,8 @@ jobs:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run-integration
           speculative: true
-          tf-vars: 'run_number = ${{ github.run_number }}'
+          tf-vars: |
+            run_number = ${{ github.run_number }}
         id: plan
 
       - name: Assert speculative plan has changes
@@ -31,7 +32,8 @@ jobs:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run-integration
           message: "Integration run ${{ github.run_number }}"
-          tf-vars: 'run_number = ${{ github.run_number }}'
+          tf-vars: |
+            run_number = ${{ github.run_number }}
 
         # TODO support retrieve terraform outputs from tfe-run to get URL of the bucket
       - name: Assert run number is published to S3
