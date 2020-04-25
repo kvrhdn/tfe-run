@@ -20,7 +20,7 @@ jobs:
           echo ::set-env name=BUILD_START::$(date +%s)
 
           # Note: github.run_number does not change when re-run, this might cause issues when re-running workflows
-          echo ::set-env name=BUILD_ID::tfe-run_integration-${{ github.run_number }}
+          echo ::set-env name=BUILD_ID::${{ github.run_number }}
 
       - uses: actions/checkout@v2
 
