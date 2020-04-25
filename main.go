@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/go-tfe"
@@ -53,6 +55,25 @@ func run() error {
 			return fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
 		}
 		return fmt.Errorf("could not create a new configuration version: %w", err)
+	}
+
+	if input.TfVars != "" {
+		// Creating a *.auto.tfvars file is the easiest way to temporarily set a variable. The API
+		// exposed by Terraform Cloud only allows setting workspace variables. These variables are
+		// persistent across runs which might cause undesired side-effects.
+		varsFile := filepath.Join(input.Directory, w.WorkingDirectory, "run.auto.tfvars")
+
+		err = ioutil.WriteFile(varsFile, []byte(input.TfVars), 0644)
+		if err != nil {
+			return fmt.Errorf("could not write run.auto.tfvars: %w", err)
+		}
+
+		defer func() {
+			err := os.Remove(varsFile)
+			if err != nil {
+				fmt.Printf("Could not remove run.auto.tfvars, this might cause issues with later steps: %v", err)
+			}
+		}()
 	}
 
 	fmt.Print("Uploading directory...\n")

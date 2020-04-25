@@ -18,6 +18,7 @@ type Input struct {
 	Message      string `json:"message"`
 	Directory    string `json:"directory"`
 	Speculative  bool   `json:"speculative"`
+	TfVars       string `json:"tfVars"`
 }
 
 // ReadInput reads and parses input data.
@@ -68,8 +69,13 @@ func readInputGitHubActions() (input Input, err error) {
 	input.Speculative, err = strconv.ParseBool(speculative)
 	if err != nil {
 		err = fmt.Errorf("could not parse input paramater 'speculative' as bool: %w", err)
+		return
 	}
 
+	input.TfVars, err = gha.ReadInput("tf-vars")
+	if err != nil {
+		err = fmt.Errorf("could not parse input paramater 'tf-vars': %w", err)
+	}
 	return
 }
 

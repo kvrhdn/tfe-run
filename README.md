@@ -44,6 +44,7 @@ Name           | Required | Description                                         
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
 `speculative`  |          | Whether to run [a speculative plan][tfe-speculative-plan].                                                      | bool   | `false`
+`tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 
 [tfe-tokens]: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
 [tfe-speculative-plan]: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans

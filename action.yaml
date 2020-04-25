@@ -40,6 +40,10 @@ inputs:
       The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore.
     required: false
     default: ./
+  tf-vars:
+    description: |
+      The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.
+    required: false
 
 outputs:
   run-url:
