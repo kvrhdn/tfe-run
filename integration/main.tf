@@ -4,7 +4,7 @@ terraform {
     organization = "kvrhdn"
 
     workspaces {
-      name = "tfe-run-integration"
+      name = "tfe-run_integration"
     }
   }
 }
@@ -15,7 +15,7 @@ provider "aws" {
 }
 
 locals {
-  bucket_name = "tfe-run-integration"
+  bucket_name = "tfe-run_integration"
   tags = {
     project   = "tfe-run"
     terraform = true
@@ -23,7 +23,7 @@ locals {
 }
 
 variable "run_number" {
-  description = "A run number that will be published on the bucket"
+  description = "Run number that will be published on the bucket"
   type        = number
 }
 

@@ -86,10 +86,11 @@ First create a file `input.json` which contains the inputs which are otherwise p
 {
     "token": "...",
     "organization": "kvrhdn",
-    "workspace": "kvrhdn_dev",
+    "workspace": "tfe-run-integration",
     "speculative": false,
     "message": "Queued locally using tfe-run",
-    "directory": "../kvrhdn.dev/"
+    "directory": ".",
+    "tfVars": "run_number = 0"
 }
 ```
 

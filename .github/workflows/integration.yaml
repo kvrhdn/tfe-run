@@ -50,7 +50,7 @@ jobs:
       - uses: kvrhdn/tfe-run@master
         with:
           token: ${{ secrets.TFE_TOKEN }}
-          workspace: tfe-run-integration
+          workspace: tfe-run_integration
           speculative: true
           tf-vars: |
             run_number = ${{ github.run_number }}
@@ -75,7 +75,7 @@ jobs:
       - uses: kvrhdn/tfe-run@master
         with:
           token: ${{ secrets.TFE_TOKEN }}
-          workspace: tfe-run-integration
+          workspace: tfe-run_integration
           message: "Integration run ${{ github.run_number }}"
           tf-vars: |
             run_number = ${{ github.run_number }}
@@ -84,7 +84,7 @@ jobs:
       - name: Assert run number is published to S3
         run: |
           EXPECTED="GitHub Actions run number: ${{ github.run_number }}"
-          ACTUAL=$(curl http://tfe-run-integration.s3-website.eu-central-1.amazonaws.com)
+          ACTUAL=$(curl http://tfe-run_integration.s3-website.eu-central-1.amazonaws.com)
 
           if [ "$EXPECTED" != "$ACTUAL" ]; then
             echo "Data on S3 does not match with expectations!"
