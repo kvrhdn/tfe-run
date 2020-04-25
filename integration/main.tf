@@ -15,7 +15,7 @@ provider "aws" {
 }
 
 locals {
-  bucket_name = "tfe-run_integration"
+  bucket_name = "tfe-run-integration"
   tags = {
     project   = "tfe-run"
     terraform = true
