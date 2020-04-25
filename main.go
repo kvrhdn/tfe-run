@@ -13,35 +13,36 @@ import (
 )
 
 func main() {
-	err := run()
+	input, err := io.ReadInput()
+	if err != nil {
+		fmt.Printf("Error: could not read input: %v", err)
+		os.Exit(1)
+	}
+
+	output, err := run(input)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
+	io.WriteOutput(&output)
 }
 
-func run() error {
-	var output io.Output
-	defer io.WriteOutput(&output)
-
-	input, err := io.ReadInput()
-	if err != nil {
-		return fmt.Errorf("could not read input: %w", err)
-	}
-
+func run(input io.Input) (output io.Output, err error) {
 	config := &tfe.Config{
 		Token: input.Token,
 	}
 	client, err := tfe.NewClient(config)
 	if err != nil {
-		return fmt.Errorf("could not create a new TFE client: %w", err)
+		err = fmt.Errorf("could not create a new TFE client: %w", err)
+		return
 	}
 
 	ctx := context.Background()
 
 	w, err := client.Workspaces.Read(ctx, input.Organization, input.Workspace)
 	if err != nil {
-		return fmt.Errorf("could not retrieve workspace '%v/%v': %w", input.Organization, input.Workspace, err)
+		err = fmt.Errorf("could not retrieve workspace '%v/%v': %w", input.Organization, input.Workspace, err)
+		return
 	}
 
 	cvOptions := tfe.ConfigurationVersionCreateOptions{
@@ -52,9 +53,11 @@ func run() error {
 	cv, err := client.ConfigurationVersions.Create(ctx, w.ID, cvOptions)
 	if err != nil {
 		if err == tfe.ErrResourceNotFound {
-			return fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
+			err = fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
+		} else {
+			err = fmt.Errorf("could not create a new configuration version: %w", err)
 		}
-		return fmt.Errorf("could not create a new configuration version: %w", err)
+		return
 	}
 
 	if input.TfVars != "" {
@@ -65,7 +68,8 @@ func run() error {
 
 		err = ioutil.WriteFile(varsFile, []byte(input.TfVars), 0644)
 		if err != nil {
-			return fmt.Errorf("could not write run.auto.tfvars: %w", err)
+			err = fmt.Errorf("could not write run.auto.tfvars: %w", err)
+			return
 		}
 
 		defer func() {
@@ -80,7 +84,8 @@ func run() error {
 
 	err = client.ConfigurationVersions.Upload(ctx, cv.UploadURL, input.Directory)
 	if err != nil {
-		return fmt.Errorf("could not upload directory '%v': %w", input.Directory, err)
+		err = fmt.Errorf("could not upload directory '%v': %w", input.Directory, err)
+		return
 	}
 
 	fmt.Print("Done uploading.\n")
@@ -92,7 +97,8 @@ func run() error {
 	}
 	r, err := client.Runs.Create(ctx, rOptions)
 	if err != nil {
-		return fmt.Errorf("could not create run: %w", err)
+		err = fmt.Errorf("could not create run: %w", err)
+		return
 	}
 
 	runURL := fmt.Sprintf(
@@ -111,14 +117,15 @@ func run() error {
 	// Speculative runs can always continue it seems.
 	if !input.Speculative && !w.AutoApply {
 		fmt.Print("Auto apply isn't enabled, won't wait for completion.\n")
-		return nil
+		return
 	}
 
 	var prevStatus tfe.RunStatus
 	for {
 		r, err = client.Runs.Read(ctx, r.ID)
 		if err != nil {
-			return fmt.Errorf("could not read run '%v': %v", r.ID, err)
+			err = fmt.Errorf("could not read run '%v': %v", r.ID, err)
+			return
 		}
 
 		if prevStatus != r.Status {
@@ -141,14 +148,14 @@ func run() error {
 		fmt.Println("Run has been applied!")
 
 	case tfe.RunCanceled:
-		return fmt.Errorf("run %v has been canceled", r.ID)
+		err = fmt.Errorf("run %v has been canceled", r.ID)
 	case tfe.RunDiscarded:
-		return fmt.Errorf("run %v has been discarded", r.ID)
+		err = fmt.Errorf("run %v has been discarded", r.ID)
 	case tfe.RunErrored:
-		return fmt.Errorf("run %v has errored", r.ID)
+		err = fmt.Errorf("run %v has errored", r.ID)
 	}
 
-	return nil
+	return
 }
 
 func isEndStatus(r tfe.RunStatus) bool {
