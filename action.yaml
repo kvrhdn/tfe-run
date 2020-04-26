@@ -28,22 +28,22 @@ inputs:
 
       See also: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
     required: false
-    default: false
+    default: 'false'
   message:
     description: |
       Optional message to use as name of the run.
     required: false
-    default: |
-      Queued by GitHub Actions (commit: ${{ github.sha }})
+    default: 'Queued by GitHub Actions (commit: ${{ github.sha }})'
   directory:
     description: |
       The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore.
     required: false
-    default: ./
+    default: './'
   tf-vars:
     description: |
       The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.
     required: false
+    default: ''
 
 outputs:
   run-url:
