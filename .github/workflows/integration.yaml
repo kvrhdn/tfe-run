@@ -2,50 +2,25 @@ name: Integration
 on:
   push:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: "*/15 * * * *"
 
 jobs:
   integration:
     name: Integration
     runs-on: ubuntu-latest
 
-    env:
-      BUILDEVENT_APIKEY: ${{ secrets.BUILDEVENT_APIKEY }}
-      BUILDEVENT_DATASET: "tfe-run_integration"
-      BUILDEVENT_CIPROVIDER: "github-actions"
-
     steps:
-      - name: Record build start
-        run: |
-          echo ::set-env name=BUILD_START::$(date +%s)
-
-          # Note: github.run_number does not change when re-run, this might cause issues when re-running workflows
-          echo ::set-env name=BUILD_ID::${{ github.run_number }}
+      - uses: kvrhdn/gha-buildevents@master
+        with:
+          apikey: ${{ secrets.BUILDEVENT_APIKEY }}
+          dataset: tfe-run_integration
 
       - uses: actions/checkout@v2
-
-      - name: Set up buildevents file
-        run: |
-          echo github_workflow=${{ github.workflow }} >> ../buildevents.txt
-          echo github_run_number=${{ github.run_number }} >> ../buildevents.txt
-          echo github_event_name=${{ github.event_name }} >> ../buildevents.txt
-          echo github_sha=${{ github.sha }} >> ../buildevents.txt
-          echo github_ref=${{ github.ref }} >> ../buildbuildevents.txt
-
-          echo ::set-env name=BUILDEVENT_FILE::../buildevents.txt
-
-          cat ../buildevents.txt
-
-      - name: Install Honeycomb's buildevents tool
-        run: |
-          sudo curl -L -o /usr/local/bin/buildevents https://github.com/honeycombio/buildevents/releases/latest/download/buildevents-linux-amd64
-          sudo chmod 755 /usr/local/bin/buildevents
 
       - name: Start step 'speculative-plan'
         run: |
           echo ::set-env name=STEP_ID::0
           echo ::set-env name=STEP_START::$(date +%s)
-          echo ::set-env name=STEP_NAME::speculative-plan
 
       - uses: kvrhdn/tfe-run@master
         with:
@@ -64,13 +39,12 @@ jobs:
 
       - name: Wrap up step
         run: |
-          buildevents step $BUILD_ID $STEP_ID $STEP_START $STEP_NAME
+          buildevents step $BUILD_ID $STEP_ID $STEP_START speculative-plan
 
       - name: Start step 'apply'
         run: |
           echo ::set-env name=STEP_ID::1
           echo ::set-env name=STEP_START::$(date +%s)
-          echo ::set-env name=STEP_NAME::apply
 
       - uses: kvrhdn/tfe-run@master
         with:
@@ -99,14 +73,6 @@ jobs:
 
       - name: Wrap up step
         run: |
-          buildevents step $BUILD_ID $STEP_ID $STEP_START $STEP_NAME
+          buildevents step $BUILD_ID $STEP_ID $STEP_START apply
 
-      - name: Build and transmit buildevent trace
-        if: success()
-        run: |
-          buildevents build $BUILD_ID $BUILD_START success
-
-      - name: Build and transmit buildevent trace
-        if: failure()
-        run: |
-          buildevents build $BUILD_ID $BUILD_START failure
+      - run: echo ::set-env name=BUILD_SUCCESS::true
