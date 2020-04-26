@@ -3,8 +3,8 @@ author: Koenraad Verheyden
 description: Create a new run on Terraform Cloud
 
 branding:
-  icon: 'tool'
-  color: 'purple'
+  icon: fast-forward
+  color: purple
 
 inputs:
   token:
