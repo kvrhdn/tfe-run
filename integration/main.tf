@@ -48,9 +48,7 @@ resource "aws_s3_bucket" "main" {
 resource "aws_s3_bucket_object" "index" {
   bucket = aws_s3_bucket.main.id
   key    = "index.txt"
-  content = templatefile("index.txt", {
-      run_number = var.run_number
-  })
+  content = "GitHub Actions run number: ${var.run_number}"
 
   tags = local.tags
 }
@@ -58,7 +56,7 @@ resource "aws_s3_bucket_object" "index" {
 resource "aws_s3_bucket_object" "error" {
   bucket = aws_s3_bucket.main.id
   key    = "error.html"
-  content = file("error.html")
+  content = "Visit kvrhdn/tfe-run: https://github.com/kvrhdn/tfe-run"
 
   tags = local.tags
 }
