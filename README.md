@@ -5,34 +5,53 @@
 
 This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Cloud into your GitHub Actions workflow.
 
-⚠️ This action is still in development, for now use the version from the master branch `kvrhdn/tfe-run@master`. I plan to introduce a `v1` tag eventually.
-
 ## How to use it
 
 ```yaml
-name: Build & deploy
-on: [push]
+- uses: kvrhdn/tfe-run@v1
+  with:
+    token: ${{ secrets.TFE_TOKEN }}
+    workspace: tfe-run
+    message: |
+      Run triggered using tfe-run (commit: ${{ github.SHA }})
+  id: tfe-run
 
-jobs:
-  build:
-    name: Build & deploy
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v2
-
-      ... other build steps ...
-
-      - uses: kvrhdn/tfe-run@master
-        with:
-          token: ${{ secrets.TFE_TOKEN }}
-          workspace: tfe-run
-          message: |
-            Run triggered using tfe-run (commit: ${{ github.SHA }})
-        id: tfe-run
-
-      ... next steps can access the run URL with ${{ steps.tfe-run.outputs.run-url }}
+... next steps can access the run URL with ${{ steps.tfe-run.outputs.run-url }}
 ```
+
+Full option list:
+
+```yaml
+- uses: kvrhdn/tfe-run@v1
+  with:
+    # Token used to communicate with the Terraform Cloud API. Must be a user or
+    # team api token.
+    token: ${{ secrets.TFE_TOKEN }}
+
+    # Name of the organization on Terraform Cloud. Defaults to the GitHub
+    # organization name.
+    organization: kvrhdn
+
+    # Name of the workspace on Terraform Cloud.
+    workspace: tfe-run
+
+    # Optional message to use as name of the run.
+    message: |
+      Run triggered using tfe-run (commit: ${{ github.SHA }})
+
+    # The directory that is uploaded to Terraform Enterprise, defaults to the
+    # repository root. Respsects .terraformignore
+    directory: infrastructure/
+
+    # Whether to run a speculative plan.
+    speculative: false
+
+    # The contents of a auto.tfvars file that will be uploaded to Terraform
+    # Cloud. This can be used to set Terraform variables.
+    tf-vars: |
+      run_number = ${{ github.run_number }}
+```
+
 
 ### Inputs
 
@@ -57,33 +76,18 @@ Name          | Description                                                     
 `has-changes` | Whether the run has changes.                                                                      | bool (`'true'` or `'false'`)
 `tf-**`       | Outputs from the current Terraform state, prefixed with `tf-`. Only set for non-speculative runs. | string
 
-## How does it work?
-
-This action will interact with [the Terraform Cloud API][tf-cloud-api] to manually create a new run.
-
-First, it will look up the workspace and create a new [_Configuration Version_][tfe-api-configuration-version]. Next the contents of `directory` are uploaded to this configuration version (if `directory` is not specified, the repository will be uploaded). Uploading respects the [`.terraformignore`][terraformignore] file.
-
-Lastly, [a run][tfe-api-run] is created linked to the configuration version, this allows setting a custom message.
-
-If the workspace has [auto apply enabled][tfe-auto-apply], the action will keep track of the scheduled run until it has completed or failed. If auto apply is not enalbled, the action will return immediately to avoid hanging.
-
-[tf-cloud-api]: https://www.terraform.io/docs/cloud/run/api.html
-[tfe-api-configuration-version]: https://www.terraform.io/docs/cloud/api/configuration-versions.html
-[tfe-api-run]: https://www.terraform.io/docs/cloud/api/run.html
-[terraformignore]: https://www.terraform.io/docs/backends/types/remote.html#excluding-files-from-upload-with-terraformignore
-[tfe-auto-apply]: https://www.terraform.io/docs/cloud/workspaces/settings.html#auto-apply-and-manual-apply
-
 ## License
 
 This Action is distributed under the terms of the MIT license, see [LICENSE](./LICENSE) for details.
 
 ## Local development
 
-Easiest way to work on this locally is to run the Go program directly.
+The easiest way to work on this locally is to run the Go program directly. The program will check whether it is running within the GitHub Actions environment and if not, read its inputs from a file `input.json`.
 
-First create a file `input.json` which contains the inputs which are otherwise provided by GitHub Actions. Make sure _all inputs_ are present, missing inputs will cause inconsist errors.
+Create a file `input.json` which contains the inputs that would otherwise be provided by GitHub Actions.
 
 ```json
+# input.json
 {
     "token": "...",
     "organization": "kvrhdn",
