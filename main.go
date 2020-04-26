@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-tfe"
 	"github.com/kvrhdn/tfe-run/io"
 )
@@ -93,14 +94,22 @@ func run(input io.Input) (output io.Output, err error) {
 
 	fmt.Print("Done uploading.\n")
 
-	rOptions := tfe.RunCreateOptions{
-		Workspace:            w,
-		ConfigurationVersion: cv,
-		Message:              &input.Message,
-	}
-	r, err := client.Runs.Create(ctx, rOptions)
+	var r *tfe.Run
+
+	err = retry.Do(func() error {
+		rOptions := tfe.RunCreateOptions{
+			Workspace:            w,
+			ConfigurationVersion: cv,
+			Message:              &input.Message,
+		}
+		r, err = client.Runs.Create(ctx, rOptions)
+		if err != nil {
+			err = fmt.Errorf("could not create run: %w", err)
+			return err
+		}
+		return nil
+	})
 	if err != nil {
-		err = fmt.Errorf("could not create run: %w", err)
 		return
 	}
 
