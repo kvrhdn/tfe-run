@@ -72,10 +72,8 @@ func readInputGitHubActions() (input Input, err error) {
 		return
 	}
 
-	input.TfVars, err = gha.ReadInput("tf-vars")
-	if err != nil {
-		err = fmt.Errorf("could not parse input paramater 'tf-vars': %w", err)
-	}
+	// Input.TfVars may be empty
+	input.TfVars, _ = gha.ReadInput("tf-vars")
 	return
 }
 
