@@ -96,6 +96,9 @@ func run(input io.Input) (output io.Output, err error) {
 
 	var r *tfe.Run
 
+	// Runs.Create is put within a retry block since this call sporadically
+	// fails with a cryptic error 'invalid run parameters'
+	// https://github.com/hashicorp/go-tfe/issues/116
 	err = retry.Do(func() error {
 		rOptions := tfe.RunCreateOptions{
 			Workspace:            w,
