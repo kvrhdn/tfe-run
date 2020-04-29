@@ -14,6 +14,7 @@ jobs:
         with:
           apikey: ${{ secrets.BUILDEVENT_APIKEY }}
           dataset: tfe-run_integration
+          job-status: ${{ job.status }}
 
       - uses: actions/checkout@v2
 
@@ -74,5 +75,3 @@ jobs:
       - name: Wrap up step
         run: |
           buildevents step $BUILD_ID $STEP_ID $STEP_START apply
-
-      - run: echo ::set-env name=BUILD_SUCCESS::true
