@@ -50,6 +50,10 @@ Full option list:
     # Cloud. This can be used to set Terraform variables.
     tf-vars: |
       run_number = ${{ github.run_number }}
+
+  # Optionally, assign this step an ID so you refer to the outputs from the
+  # action with ${{ steps.<id>.outputs.<output variable> }}
+  id: tfe-run
 ```
 
 
