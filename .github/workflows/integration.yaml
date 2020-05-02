@@ -23,7 +23,7 @@ jobs:
           echo ::set-env name=STEP_ID::0
           echo ::set-env name=STEP_START::$(date +%s)
 
-      - uses: kvrhdn/tfe-run@master
+      - uses: ./
         with:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run_integration
@@ -47,7 +47,7 @@ jobs:
           echo ::set-env name=STEP_ID::1
           echo ::set-env name=STEP_START::$(date +%s)
 
-      - uses: kvrhdn/tfe-run@master
+      - uses: ./
         with:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run_integration
