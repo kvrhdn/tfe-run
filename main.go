@@ -6,257 +6,85 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
+	"strconv"
 
-	"github.com/avast/retry-go"
-	"github.com/hashicorp/go-tfe"
-	"github.com/kvrhdn/tfe-run/io"
+	"github.com/kvrhdn/tfe-run/gha"
+	"github.com/kvrhdn/tfe-run/tfe"
 )
 
+type input struct {
+	Token        string `gha:"token,required"`
+	Organization string `gha:"organization,required"`
+	Workspace    string `gha:"workspace,required"`
+	Message      string
+	Directory    string
+	Speculative  bool
+	TfVars       string `gha:"tf-vars"`
+}
+
 func main() {
-	input, err := io.ReadInput()
+	var input input
+	var err error
+
+	if gha.InGitHubActions() {
+		err = gha.PopulateFromInputs(&input)
+	} else {
+		err = unmarshalJSON("input.json", &input)
+	}
 	if err != nil {
 		fmt.Printf("Error: could not read input: %v", err)
 		os.Exit(1)
 	}
 
-	output, err := run(input)
+	ctx := context.Background()
+
+	options := tfe.RunOptions{
+		Token:        input.Token,
+		Organization: input.Organization,
+		Workspace:    input.Workspace,
+		Message:      input.Message,
+		Directory:    input.Directory,
+		Speculative:  input.Speculative,
+		TfVars:       input.TfVars,
+	}
+	output, err := tfe.Run(ctx, options)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
-	io.WriteOutput(&output)
+
+	writeOutput(&output)
 }
 
-func run(input io.Input) (output io.Output, err error) {
-	config := &tfe.Config{
-		Token: input.Token,
-	}
-	client, err := tfe.NewClient(config)
+func unmarshalJSON(filename string, v interface{}) error {
+	bytes, err := ioutil.ReadFile(filename)
 	if err != nil {
-		err = fmt.Errorf("could not create a new TFE client: %w", err)
-		return
+		return fmt.Errorf("could not read '%v': %w", filename, err)
 	}
 
-	ctx := context.Background()
-
-	w, err := client.Workspaces.Read(ctx, input.Organization, input.Workspace)
+	err = json.Unmarshal(bytes, &v)
 	if err != nil {
-		err = fmt.Errorf("could not retrieve workspace '%v/%v': %w", input.Organization, input.Workspace, err)
-		return
+		return fmt.Errorf("could not unmarshal JSON '%v': %w", filename, err)
 	}
-
-	cvOptions := tfe.ConfigurationVersionCreateOptions{
-		// Don't automatically queue the runs, we create the run manually to set the message
-		AutoQueueRuns: tfe.Bool(false),
-		Speculative:   &input.Speculative,
-	}
-	cv, err := client.ConfigurationVersions.Create(ctx, w.ID, cvOptions)
-	if err != nil {
-		if err == tfe.ErrResourceNotFound {
-			err = fmt.Errorf("could not create configuration version (404 not found), this might happen if you are not using a user or team API token")
-		} else {
-			err = fmt.Errorf("could not create a new configuration version: %w", err)
-		}
-		return
-	}
-
-	if input.TfVars != "" {
-		// Creating a *.auto.tfvars file is the easiest way to temporarily set a variable. The API
-		// exposed by Terraform Cloud only allows setting workspace variables. These variables are
-		// persistent across runs which might cause undesired side-effects.
-		varsFile := filepath.Join(input.Directory, w.WorkingDirectory, "run.auto.tfvars")
-
-		fmt.Printf("Creating variables file %v\n", varsFile)
-
-		err = ioutil.WriteFile(varsFile, []byte(input.TfVars), 0644)
-		if err != nil {
-			err = fmt.Errorf("could not write run.auto.tfvars: %w", err)
-			return
-		}
-
-		defer func() {
-			err := os.Remove(varsFile)
-			if err != nil {
-				fmt.Printf("Could not remove run.auto.tfvars, this might cause issues with later steps: %v", err)
-			}
-		}()
-	}
-
-	fmt.Print("Uploading directory...\n")
-
-	err = client.ConfigurationVersions.Upload(ctx, cv.UploadURL, input.Directory)
-	if err != nil {
-		err = fmt.Errorf("could not upload directory '%v': %w", input.Directory, err)
-		return
-	}
-
-	fmt.Print("Done uploading.\n")
-
-	var r *tfe.Run
-
-	// Runs.Create is put within a retry block since this call sporadically
-	// fails with a cryptic error 'invalid run parameters'
-	// https://github.com/hashicorp/go-tfe/issues/116
-	err = retry.Do(func() error {
-		rOptions := tfe.RunCreateOptions{
-			Workspace:            w,
-			ConfigurationVersion: cv,
-			Message:              &input.Message,
-		}
-		r, err = client.Runs.Create(ctx, rOptions)
-		if err != nil {
-			err = fmt.Errorf("could not create run: %w", err)
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return
-	}
-
-	runURL := fmt.Sprintf(
-		"https://app.terraform.io/app/%v/workspaces/%v/runs/%v",
-		input.Organization, input.Workspace, r.ID,
-	)
-
-	fmt.Printf("Run %v has been queued\n", r.ID)
-	fmt.Printf("View the run online: %v\n", runURL)
-
-	output.RunURL = runURL
-
-	// If auto apply isn't enabled a run could hang for a long time, even if
-	// the run itself wouldn't change anything the previous run could still be
-	// blocked waiting for confirmation.
-	// Speculative runs can always continue it seems.
-	if !input.Speculative && !w.AutoApply {
-		fmt.Print("Auto apply isn't enabled, won't wait for completion.\n")
-		return
-	}
-
-	var prevStatus tfe.RunStatus
-	for {
-		r, err = client.Runs.Read(ctx, r.ID)
-		if err != nil {
-			err = fmt.Errorf("could not read run '%v': %v", r.ID, err)
-			return
-		}
-
-		if prevStatus != r.Status {
-			fmt.Printf("Run status: %v\n", prettyPrint(r.Status))
-			prevStatus = r.Status
-		}
-
-		if isEndStatus(r.Status) {
-			break
-		}
-	}
-
-	output.HasChanges = r.HasChanges
-
-	switch r.Status {
-
-	case tfe.RunPlannedAndFinished:
-		fmt.Println("Run has been planned, nothing to do.")
-	case tfe.RunApplied:
-		fmt.Println("Run has been applied!")
-
-	case tfe.RunCanceled:
-		err = fmt.Errorf("run %v has been canceled", r.ID)
-	case tfe.RunDiscarded:
-		err = fmt.Errorf("run %v has been discarded", r.ID)
-	case tfe.RunErrored:
-		err = fmt.Errorf("run %v has errored", r.ID)
-	}
-
-	if err != nil {
-		return
-	}
-
-	if !input.Speculative {
-		output.TfOutputs, err = retrieveOutputs(ctx, client, w.ID)
-	}
-
-	return
+	return nil
 }
 
-func isEndStatus(r tfe.RunStatus) bool {
-	// All run statuses: https://github.com/hashicorp/go-tfe/blob/v0.7.0/run.go#L46
-	switch r {
-	case
-		tfe.RunPlannedAndFinished,
-		tfe.RunApplied,
-		tfe.RunCanceled,
-		tfe.RunDiscarded,
-		tfe.RunErrored:
-		return true
+func writeOutput(output *tfe.Output) {
+	if gha.InGitHubActions() {
+		gha.WriteOutput("run-url", output.RunURL)
+		gha.WriteOutput("has-changes", strconv.FormatBool(output.HasChanges))
 
-	case
-		tfe.RunPlanQueued,
-		tfe.RunPlanning,
-		tfe.RunPlanned,
-		tfe.RunPending,
-		tfe.RunConfirmed,
-		tfe.RunApplyQueued,
-		tfe.RunApplying:
-		return false
+		for k, v := range output.TfOutputs {
+			gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
+		}
+	} else {
+		fmt.Printf("Output:\n")
+		fmt.Printf(" - run-url:     %s\n", output.RunURL)
+		fmt.Printf(" - has-changes: %v\n", output.HasChanges)
 
-	case
-		tfe.RunCostEstimating,
-		tfe.RunCostEstimated,
-		tfe.RunPolicyChecked,
-		tfe.RunPolicyChecking,
-		tfe.RunPolicyOverride,
-		tfe.RunPolicySoftFailed:
-		fmt.Printf("Run is in unexpected / unsupported status %v, finishing process", r)
-		return true
+		fmt.Printf(" - tf outputs:\n")
+		for k, v := range output.TfOutputs {
+			fmt.Printf("   - %s: %s\n", k, v)
+		}
 	}
-	return true
-}
-
-func prettyPrint(r tfe.RunStatus) string {
-	return strings.ReplaceAll(fmt.Sprintf("%v", r), "_", " ")
-}
-
-type minimalTerraformState struct {
-	Outputs map[string]terraformOutput `json:"outputs"`
-}
-
-type terraformOutput struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
-func retrieveOutputs(ctx context.Context, client *tfe.Client, workspaceID string) (outputs map[string]string, err error) {
-	s, err := client.StateVersions.Current(ctx, workspaceID)
-	if err != nil {
-		err = fmt.Errorf("could not fetch current state: %w", err)
-		return
-	}
-
-	bytes, err := client.StateVersions.Download(ctx, s.DownloadURL)
-	if err != nil {
-		err = fmt.Errorf("could not download state version: %w", err)
-		return
-	}
-
-	var state minimalTerraformState
-	err = json.Unmarshal(bytes, &state)
-	if err != nil {
-		err = fmt.Errorf("could not parse state version: %w", err)
-		return
-	}
-
-	outputs = map[string]string{}
-	for k, v := range state.Outputs {
-		outputs[k] = v.Value
-	}
-
-	fmt.Printf("Outputs from current state:\n")
-	for k, v := range outputs {
-		fmt.Printf(" - %v: %v\n", k, v)
-	}
-
-	return
 }
