@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/avast/retry-go"
 	"github.com/hashicorp/go-tfe"
@@ -161,6 +162,8 @@ func Run(ctx context.Context, options RunOptions) (output Output, err error) {
 		if isEndStatus(r.Status) {
 			break
 		}
+
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	output.HasChanges = r.HasChanges
