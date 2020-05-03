@@ -40,7 +40,7 @@ jobs:
 
       - name: Wrap up step
         run: |
-          buildevents step $BUILD_ID $STEP_ID $STEP_START speculative-plan
+          buildevents step $TRACE_ID $STEP_ID $STEP_START speculative-plan
 
       - name: Start step 'apply'
         run: |
@@ -74,4 +74,4 @@ jobs:
 
       - name: Wrap up step
         run: |
-          buildevents step $BUILD_ID $STEP_ID $STEP_START apply
+          buildevents step $TRACE_ID $STEP_ID $STEP_START apply
