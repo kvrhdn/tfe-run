@@ -50,8 +50,11 @@ outputs:
     description: URL of the run on Terraform Cloud.
   has-changes:
     description: Whether a speculative plan has changes or not.
-  tf-endpoint:
-    description: Temporary output for testing
+
+  # tfe-run will also output all outputs from the Terraform workspace prefixed
+  # with `tf-`. Since these are dynamic, they can't be listed in action.yaml.
+  # For example, if a workspace has an output `endpoint`, this will exported by
+  # tfe-run as `tf-endpoint`.
 
 runs:
   using: docker

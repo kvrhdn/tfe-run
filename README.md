@@ -40,10 +40,11 @@ Full option list:
       Run triggered using tfe-run (commit: ${{ github.SHA }})
 
     # The directory that is uploaded to Terraform Enterprise, defaults to the
-    # repository root. Respsects .terraformignore
-    directory: infrastructure/
+    # repository root. Respsects .terraformignore.
+    directory: integration/
 
-    # Whether to run a speculative plan.
+    # Whether to run a speculative run. A speculative run can not be applied
+    # and is useful for creating previews of changes.
     speculative: false
 
     # The contents of a auto.tfvars file that will be uploaded to Terraform
@@ -51,26 +52,25 @@ Full option list:
     tf-vars: |
       run_number = ${{ github.run_number }}
 
-  # Optionally, assign this step an ID so you refer to the outputs from the
+  # Optionally, assign this step an ID so you can refer to the outputs from the
   # action with ${{ steps.<id>.outputs.<output variable> }}
   id: tfe-run
 ```
-
 
 ### Inputs
 
 Name           | Required | Description                                                                                                     | Type   | Default
 ---------------|----------|-----------------------------------------------------------------------------------------------------------------|--------|--------
 `token`        | yes      | Token used to communicating with the Terraform Cloud API. Must be [a user or team api token][tfe-tokens].       | string | 
-`organization` | yes      | Name of the organization on Terraform Cloud.                                                                    | string |
+`organization` |          | Name of the organization on Terraform Cloud.                                                                    | string | The repository owner
 `workspace`    | yes      | Name of the workspace on Terraform Cloud.                                                                       | string |
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
-`speculative`  |          | Whether to run [a speculative plan][tfe-speculative-plan].                                                      | bool   | `false`
+`speculative`  |          | Whether to run [a speculative run][tfe-speculative-run]. A speculative run can not be applied and is useful for creating previews of changes. | bool   | `false`
 `tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 
 [tfe-tokens]: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
-[tfe-speculative-plan]: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
+[tfe-speculative-run]: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
 
 ### Outputs
 
@@ -84,27 +84,8 @@ Name          | Description                                                     
 
 This Action is distributed under the terms of the MIT license, see [LICENSE](./LICENSE) for details.
 
-## Local development
+## Development
 
-The easiest way to work on this locally is to run the Go program directly. The program will check whether it is running within the GitHub Actions environment and if not, read its inputs from a file `input.json`.
+For running tfe-run locally, see [development.md](./doc/development.md).
 
-Create a file `input.json` which contains the inputs that would otherwise be provided by GitHub Actions.
-
-```json
-# input.json
-{
-    "token": "...",
-    "organization": "kvrhdn",
-    "workspace": "tfe-run-integration",
-    "speculative": false,
-    "message": "Queued locally using tfe-run",
-    "directory": ".",
-    "tfVars": "run_number = 0"
-}
-```
-
-Next, run the program locally:
-
-```
-go run .
-```
+For creating new release, see [release-procedure.md](./doc/release-procedure.md).
