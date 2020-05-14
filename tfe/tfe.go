@@ -133,7 +133,8 @@ func Run(ctx context.Context, options RunOptions) (output Output, err error) {
 	)
 
 	fmt.Printf("Run %v has been queued\n", r.ID)
-	fmt.Printf("View the run online: %v\n", runURL)
+	fmt.Printf("View the run online:\n")
+	fmt.Printf("%v\n", runURL)
 
 	output.RunURL = runURL
 
