@@ -8,8 +8,8 @@ import (
 	"os"
 	"strconv"
 
+	tfe "github.com/kvrhdn/go-tfe-run/lib"
 	"github.com/kvrhdn/tfe-run/gha"
-	"github.com/kvrhdn/tfe-run/tfe"
 )
 
 type input struct {
