@@ -28,6 +28,7 @@ jobs:
           token: ${{ secrets.TFE_TOKEN }}
           workspace: tfe-run_integration
           speculative: true
+          wait-for-completion: true
           tf-vars: |
             run_number = ${{ github.run_number }}
         id: plan
