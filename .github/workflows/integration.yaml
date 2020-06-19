@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: kvrhdn/gha-buildevents@master
+      - uses: kvrhdn/gha-buildevents@main
         with:
           apikey: ${{ secrets.BUILDEVENT_APIKEY }}
           dataset: tfe-run_integration
