@@ -13,6 +13,7 @@ Create a file `input.json` which contains the inputs that would otherwise be pro
     "organization": "kvrhdn",
     "workspace": "tfe-run_integration",
     "speculative": false,
+    "waitForCompletion": true,
     "message": "Queued locally using tfe-run",
     "directory": "./",
     "tfVars": "run_number = 0"

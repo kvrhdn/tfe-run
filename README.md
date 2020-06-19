@@ -57,6 +57,10 @@ Full option list:
     # and is useful for creating previews of changes.
     speculative: false
 
+    # Whether we should wait for the non-speculative run to be applied. This
+    # will block until the run is finished.
+    wait-for-completion: true
+
     # The contents of a auto.tfvars file that will be uploaded to Terraform
     # Cloud. This can be used to set Terraform variables.
     tf-vars: |
@@ -77,6 +81,7 @@ Name           | Required | Description                                         
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
 `speculative`  |          | Whether to run [a speculative run][tfe-speculative-run]. A speculative run can not be applied and is useful for creating previews of changes. | bool   | `false`
+`wait-for-completion` |   | Whether we should wait for the non-speculative run to be applied. This will block until the run is finished.    | string | `false`
 `tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 
 [tfe-tokens]: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html

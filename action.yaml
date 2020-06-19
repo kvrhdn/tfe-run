@@ -29,6 +29,11 @@ inputs:
       See also: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
     required: false
     default: 'false'
+  wait-for-completion:
+    description: |
+      Whether we should wait for the non-speculative run to be applied. This will block until the run is finished.
+    required: false
+    default: 'false'
   message:
     description: |
       Optional message to use as name of the run.

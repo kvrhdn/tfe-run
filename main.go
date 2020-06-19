@@ -13,13 +13,14 @@ import (
 )
 
 type input struct {
-	Token        string `gha:"token,required"`
-	Organization string `gha:"organization,required"`
-	Workspace    string `gha:"workspace,required"`
-	Message      string
-	Directory    string
-	Speculative  bool
-	TfVars       string `gha:"tf-vars"`
+	Token             string `gha:"token,required"`
+	Organization      string `gha:"organization,required"`
+	Workspace         string `gha:"workspace,required"`
+	Message           string
+	Directory         string
+	Speculative       bool
+	WaitForCompletion bool   `gha:"wait-for-completion"`
+	TfVars            string `gha:"tf-vars"`
 }
 
 func main() {
@@ -39,13 +40,14 @@ func main() {
 	ctx := context.Background()
 
 	options := tfe.RunOptions{
-		Token:        input.Token,
-		Organization: input.Organization,
-		Workspace:    input.Workspace,
-		Message:      input.Message,
-		Directory:    input.Directory,
-		Speculative:  input.Speculative,
-		TfVars:       input.TfVars,
+		Token:             input.Token,
+		Organization:      input.Organization,
+		Workspace:         input.Workspace,
+		Message:           input.Message,
+		Directory:         input.Directory,
+		Speculative:       input.Speculative,
+		WaitForCompletion: input.WaitForCompletion,
+		TfVars:            input.TfVars,
 	}
 	output, err := tfe.Run(ctx, options)
 	if err != nil {
