@@ -31,7 +31,7 @@ inputs:
     default: 'false'
   wait-for-completion:
     description: |
-      Whether we should wait for the non-speculative run to be applied. This will block until the run is finished.
+      Whether we should wait for the plan or run to be applied. This will block until the run is finished.
     required: false
     default: 'true'
   message:
