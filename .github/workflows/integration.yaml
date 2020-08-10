@@ -1,8 +1,9 @@
 name: Integration
+
 on:
   push:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "0 * * * *"
 
 jobs:
   integration:
