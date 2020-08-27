@@ -1,6 +1,6 @@
-name: tfe-run
+name: Terraform Cloud Run
 author: Koenraad Verheyden
-description: Create a new run on Terraform Cloud
+description: Create and customize a run on Terraform Cloud
 
 branding:
   icon: fast-forward
