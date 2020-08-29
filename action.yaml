@@ -24,6 +24,7 @@ inputs:
     description: |
       Whether to run a speculative plan.
     required: false
+    default: 'false'
   wait-for-completion:
     description: |
       Whether we should wait for the plan or run to be applied. This will block until the run is finished. Defaults to true.
