@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 
-	tfe "github.com/kvrhdn/go-tfe-run/lib"
+	tferun "github.com/kvrhdn/go-tfe-run"
 	"github.com/kvrhdn/tfe-run/gha"
 )
 
@@ -39,17 +39,17 @@ func main() {
 
 	ctx := context.Background()
 
-	options := tfe.RunOptions{
+	options := tferun.RunOptions{
 		Token:             input.Token,
 		Organization:      input.Organization,
 		Workspace:         input.Workspace,
-		Message:           input.Message,
-		Directory:         input.Directory,
+		Message:           notEmptyOrNil(input.Message),
+		Directory:         notEmptyOrNil(input.Directory),
 		Speculative:       input.Speculative,
 		WaitForCompletion: input.WaitForCompletion,
-		TfVars:            input.TfVars,
+		TfVars:            notEmptyOrNil(input.TfVars),
 	}
-	output, err := tfe.Run(ctx, options)
+	output, err := tferun.Run(ctx, options)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
@@ -71,13 +71,17 @@ func unmarshalJSON(filename string, v interface{}) error {
 	return nil
 }
 
-func writeOutput(output *tfe.Output) {
+func writeOutput(output *tferun.RunOutput) {
 	if gha.InGitHubActions() {
 		gha.WriteOutput("run-url", output.RunURL)
-		gha.WriteOutput("has-changes", strconv.FormatBool(output.HasChanges))
+		if output.HasChanges != nil {
+			gha.WriteOutput("has-changes", strconv.FormatBool(*output.HasChanges))
+		}
 
-		for k, v := range output.TfOutputs {
-			gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
+		if output.TfOutputs != nil {
+			for k, v := range *output.TfOutputs {
+				gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
+			}
 		}
 	} else {
 		fmt.Printf("Output:\n")
@@ -85,8 +89,17 @@ func writeOutput(output *tfe.Output) {
 		fmt.Printf(" - has-changes: %v\n", output.HasChanges)
 
 		fmt.Printf(" - tf outputs:\n")
-		for k, v := range output.TfOutputs {
-			fmt.Printf("   - %s: %s\n", k, v)
+		if output.TfOutputs != nil {
+			for k, v := range *output.TfOutputs {
+				fmt.Printf("   - %s: %s\n", k, v)
+			}
 		}
 	}
+}
+
+func notEmptyOrNil(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
