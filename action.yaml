@@ -10,8 +10,6 @@ inputs:
   token:
     description: |
       Token used to communicating with the Terraform Cloud API. Must be a user or team api token.
-      
-      See also: https://www.terraform.io/docs/cloud/users-teams-organizations/api-tokens.html
     required: true
   organization:
     description: |
@@ -19,19 +17,16 @@ inputs:
     required: false
     default: ${{ github.repository_owner }}
   workspace:
-    description: |
+    description: >
       Name of the workspace on Terraform Cloud.
     required: true
   speculative:
     description: |
       Whether to run a speculative plan.
-
-      See also: https://www.terraform.io/docs/cloud/run/index.html#speculative-plans
     required: false
-    default: 'false'
   wait-for-completion:
     description: |
-      Whether we should wait for the plan or run to be applied. This will block until the run is finished.
+      Whether we should wait for the plan or run to be applied. This will block until the run is finished. Defaults to true.
     required: false
     default: 'true'
   message:
@@ -43,12 +38,10 @@ inputs:
     description: |
       The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore.
     required: false
-    default: './'
   tf-vars:
     description: |
       The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.
     required: false
-    default: ''
 
 outputs:
   run-url:

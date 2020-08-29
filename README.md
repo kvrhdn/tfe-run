@@ -2,15 +2,16 @@
 
 ![CI](https://github.com/kvrhdn/tfe-run/workflows/CI/badge.svg)
 ![Integration](https://github.com/kvrhdn/tfe-run/workflows/Integration/badge.svg)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kvrhdn/tfe-run)](https://goreportcard.com/report/github.com/kvrhdn/tfe-run)
 
 This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Cloud into your GitHub Actions workflow.
 
 This action creates runs using [the Terraform Cloud API][tfe-api] which provides more flexibility than using the CLI. Namely, you can:
 - define your own message (no more _"Queued manually using Terraform"_)
 - provide as many variables as you want
-- access the outputs from latest Terraform state
+- access the outputs from the Terraform state
 
-Internally, we leverage [the official Go API client][go-tfe].
+Internally, we leverage [the official Go API client from Hashicorp][go-tfe].
 
 [tfe-api]: https://www.terraform.io/docs/cloud/run/api.html
 [go-tfe]: https://github.com/hashicorp/go-tfe/
