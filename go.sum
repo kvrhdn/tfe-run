@@ -1,5 +1,3 @@
-github.com/avast/retry-go v2.6.0+incompatible h1:FelcMrm7Bxacr1/RM8+/eqkDkmVN7tjlsy51dOzB3LI=
-github.com/avast/retry-go v2.6.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -18,8 +16,8 @@ github.com/hashicorp/go-uuid v1.0.1 h1:fv1ep09latC32wFoVwnqcnKJGnMSdBanPczbHAYm1
 github.com/hashicorp/go-uuid v1.0.1/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
-github.com/kvrhdn/go-tfe-run v0.1.1 h1:qNZGtUXcn25Z8gEs5nQ/xn/k+y0345hC8vfdzyJhbCI=
-github.com/kvrhdn/go-tfe-run v0.1.1/go.mod h1:2z9Hm8XYnBO/o/xiUFdgE6M8H2096XFSVuFsUR/XWKo=
+github.com/kvrhdn/go-tfe-run v0.2.0 h1:IG+GnjjDY8sqn0hQ68A+FByiYWLQSaWJDwV1DEb5ETA=
+github.com/kvrhdn/go-tfe-run v0.2.0/go.mod h1:GHoS6TeV8WztFBng6OAcOwgahGzviXKJTAdRf2uZHpY=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sethvargo/go-githubactions v0.2.0 h1:CKdUfKUJvqqYz7/7l36K2DmsP5JZPycnvjfT5Ae7BVE=

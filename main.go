@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strconv"
 
@@ -27,73 +26,52 @@ func main() {
 	var input input
 	var err error
 
-	if gha.InGitHubActions() {
-		err = gha.PopulateFromInputs(&input)
-	} else {
-		err = unmarshalJSON("input.json", &input)
+	if !gha.InGitHubActions() {
+		exitWithError(errors.New("tfe-run should only be run within GitHub Actions"))
 	}
+
+	err = gha.PopulateFromInputs(&input)
 	if err != nil {
-		fmt.Printf("Error: could not read input: %v", err)
-		os.Exit(1)
+		exitWithError(fmt.Errorf("could not read inputs: %w", err))
 	}
 
 	ctx := context.Background()
 
+	cfg := tferun.ClientConfig{
+		Token:        input.Token,
+		Organization: input.Organization,
+		Workspace:    input.Workspace,
+	}
+	c, err := tferun.NewClient(ctx, cfg)
+	if err != nil {
+		exitWithError(err)
+	}
+
 	options := tferun.RunOptions{
-		Token:             input.Token,
-		Organization:      input.Organization,
-		Workspace:         input.Workspace,
 		Message:           notEmptyOrNil(input.Message),
 		Directory:         notEmptyOrNil(input.Directory),
 		Speculative:       input.Speculative,
 		WaitForCompletion: input.WaitForCompletion,
 		TfVars:            notEmptyOrNil(input.TfVars),
 	}
-	output, err := tferun.Run(ctx, options)
+	output, err := c.Run(ctx, options)
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
 		os.Exit(1)
 	}
 
-	writeOutput(&output)
-}
-
-func unmarshalJSON(filename string, v interface{}) error {
-	bytes, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return fmt.Errorf("could not read '%v': %w", filename, err)
+	gha.WriteOutput("run-url", output.RunURL)
+	if output.HasChanges != nil {
+		gha.WriteOutput("has-changes", strconv.FormatBool(*output.HasChanges))
 	}
 
-	err = json.Unmarshal(bytes, &v)
+	outputs, err := c.GetTerraformOutputs(ctx)
 	if err != nil {
-		return fmt.Errorf("could not unmarshal JSON '%v': %w", filename, err)
+		exitWithError(err)
 	}
-	return nil
-}
 
-func writeOutput(output *tferun.RunOutput) {
-	if gha.InGitHubActions() {
-		gha.WriteOutput("run-url", output.RunURL)
-		if output.HasChanges != nil {
-			gha.WriteOutput("has-changes", strconv.FormatBool(*output.HasChanges))
-		}
-
-		if output.TfOutputs != nil {
-			for k, v := range *output.TfOutputs {
-				gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
-			}
-		}
-	} else {
-		fmt.Printf("Output:\n")
-		fmt.Printf(" - run-url:     %s\n", output.RunURL)
-		fmt.Printf(" - has-changes: %v\n", output.HasChanges)
-
-		fmt.Printf(" - tf outputs:\n")
-		if output.TfOutputs != nil {
-			for k, v := range *output.TfOutputs {
-				fmt.Printf("   - %s: %s\n", k, v)
-			}
-		}
+	for k, v := range outputs {
+		gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
 	}
 }
 
@@ -102,4 +80,9 @@ func notEmptyOrNil(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func exitWithError(err error) {
+	fmt.Printf("Error: %v", err)
+	os.Exit(1)
 }
