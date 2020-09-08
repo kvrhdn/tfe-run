@@ -54,9 +54,8 @@ Full option list:
     # repository root. Respsects .terraformignore.
     directory: integration/
 
-    # Whether to run a speculative run. A speculative run can not be applied
-    # and is useful for creating previews of changes.
-    speculative: false
+    # The type of run, allowed options are 'plan', 'apply' and 'destroy'.
+    type: apply
 
     # Whether we should wait for the plan or run to be applied. This will block
     # until the run is finished.
@@ -81,7 +80,7 @@ Name           | Required | Description                                         
 `workspace`    | yes      | Name of the workspace on Terraform Cloud.                                                                       | string |
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
-`speculative`  |          | Whether to run [a speculative run][tfe-speculative-run]. A speculative run can not be applied and is useful for creating previews of changes. | bool   | `false`
+`type`         |          | The type of run, allowed options are 'plan', 'apply' and 'destroy'.                                             | string | `apply`
 `wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `false`
 `tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 

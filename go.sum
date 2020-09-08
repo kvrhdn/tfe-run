@@ -14,10 +14,8 @@ github.com/hashicorp/go-tfe v0.10.1 h1:Fz3xnYY/iQ5BQToqYXNZ9qSobuOSElbVe+zHKgzbf
 github.com/hashicorp/go-tfe v0.10.1/go.mod h1:XAV72S4O1iP8BDaqiaPLmL2B4EE6almocnOn8E8stHc=
 github.com/hashicorp/go-uuid v1.0.1 h1:fv1ep09latC32wFoVwnqcnKJGnMSdBanPczbHAYm1BE=
 github.com/hashicorp/go-uuid v1.0.1/go.mod h1:6SBZvOh/SIDV7/2o3Jml5SYk/TvGqwFJ/bN7x4byOro=
-github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
-github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
-github.com/kvrhdn/go-tfe-run v0.2.0 h1:IG+GnjjDY8sqn0hQ68A+FByiYWLQSaWJDwV1DEb5ETA=
-github.com/kvrhdn/go-tfe-run v0.2.0/go.mod h1:GHoS6TeV8WztFBng6OAcOwgahGzviXKJTAdRf2uZHpY=
+github.com/kvrhdn/go-tfe-run v0.3.0 h1:xja3tBycAYD6zPP4jJUgQEFUGx3NFS1jiM5j/UEImOE=
+github.com/kvrhdn/go-tfe-run v0.3.0/go.mod h1:FcaKJeBBrkRWsnWEs14YsDG3kOoClenwW9fFRMGAtoo=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sethvargo/go-githubactions v0.2.0 h1:CKdUfKUJvqqYz7/7l36K2DmsP5JZPycnvjfT5Ae7BVE=

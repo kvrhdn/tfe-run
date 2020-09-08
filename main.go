@@ -18,6 +18,7 @@ type input struct {
 	Message           string
 	Directory         string
 	Speculative       bool
+	Type              string
 	WaitForCompletion bool   `gha:"wait-for-completion"`
 	TfVars            string `gha:"tf-vars"`
 }
@@ -35,6 +36,13 @@ func main() {
 		exitWithError(fmt.Errorf("could not read inputs: %w", err))
 	}
 
+	runType := asRunType(input.Type)
+
+	// Speculative is deprecated, but if type is apply (the default) we still respect it
+	if runType == tferun.RunTypeApply && input.Speculative {
+		runType = tferun.RunTypePlan
+	}
+
 	ctx := context.Background()
 
 	cfg := tferun.ClientConfig{
@@ -50,7 +58,7 @@ func main() {
 	options := tferun.RunOptions{
 		Message:           notEmptyOrNil(input.Message),
 		Directory:         notEmptyOrNil(input.Directory),
-		Speculative:       input.Speculative,
+		Type:              runType,
 		WaitForCompletion: input.WaitForCompletion,
 		TfVars:            notEmptyOrNil(input.TfVars),
 	}
@@ -73,6 +81,19 @@ func main() {
 	for k, v := range outputs {
 		gha.WriteOutput(fmt.Sprintf("tf-%v", k), v)
 	}
+}
+
+func asRunType(s string) tferun.RunType {
+	switch s {
+	case "apply":
+		return tferun.RunTypeApply
+	case "plan":
+		return tferun.RunTypePlan
+	case "destroy":
+		return tferun.RunTypeDestroy
+	}
+	exitWithError(fmt.Errorf("Type \"%s\" is not supported, must be plan, apply or destroy", s))
+	return 0
 }
 
 func notEmptyOrNil(s string) *string {

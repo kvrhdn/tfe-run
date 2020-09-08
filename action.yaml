@@ -25,6 +25,13 @@ inputs:
       Whether to run a speculative plan.
     required: false
     default: 'false'
+    deprecationMessage: |
+      The property speculative is deprecated in favor of type. If type is set, speculative is ignored.
+  type:
+    description: |
+      The type of run, allowed options are 'plan', 'apply' and 'destroy'.
+    required: false
+    default: 'apply'
   wait-for-completion:
     description: |
       Whether we should wait for the plan or run to be applied. This will block until the run is finished. Defaults to true.
