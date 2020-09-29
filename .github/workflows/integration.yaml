@@ -79,3 +79,23 @@ jobs:
       - name: Wrap up step
         run: |
           buildevents step $TRACE_ID $STEP_ID $STEP_START apply
+
+      - name: Start step 'destroy'
+        run: |
+          echo ::set-env name=STEP_ID::2
+          echo ::set-env name=STEP_START::$(date +%s)
+
+      - uses: ./
+        with:
+          token: ${{ secrets.TFE_TOKEN }}
+          workspace: tfe-run_integration
+          message: "Integration run ${{ github.run_number }} - destroy"
+          type: destroy
+          wait-for-completion: true
+          tf-vars: |
+            run_number = ${{ github.run_number }}
+        id: destroy
+
+      - name: Wrap up step
+        run: |
+          buildevents step $TRACE_ID $STEP_ID $STEP_START destroy
