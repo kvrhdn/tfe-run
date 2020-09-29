@@ -1,7 +1,7 @@
 # `tfe-run` Action
 
-![CI](https://github.com/kvrhdn/tfe-run/workflows/CI/badge.svg)
-![Integration](https://github.com/kvrhdn/tfe-run/workflows/Integration/badge.svg)
+[![CI](https://github.com/kvrhdn/tfe-run/workflows/CI/badge.svg)](https://github.com/kvrhdn/tfe-run/actions?query=workflow%3ACI)
+[![Integration](https://github.com/kvrhdn/tfe-run/workflows/Integration/badge.svg)](https://github.com/kvrhdn/tfe-run/actions?query=workflow%3AIntegration)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kvrhdn/tfe-run)](https://goreportcard.com/report/github.com/kvrhdn/tfe-run)
 
 This GitHub Action creates a new run on Terraform Cloud. Integrate Terraform Cloud into your GitHub Actions workflow.
