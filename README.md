@@ -57,6 +57,13 @@ Full option list:
     # The type of run, allowed options are 'plan', 'apply' and 'destroy'.
     type: apply
 
+    # An optional list of resource addresses to target. Should be a list of
+    # strings separated by new lines.
+    #
+    # For more information about resource targeting, check https://www.terraform.io/docs/commands/plan.html#resource-targeting
+    targets: |
+        resource.name
+
     # Whether we should wait for the plan or run to be applied. This will block
     # until the run is finished.
     wait-for-completion: true
@@ -81,6 +88,7 @@ Name           | Required | Description                                         
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
 `directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
 `type`         |          | The type of run, allowed options are 'plan', 'apply' and 'destroy'.                                             | string | `apply`
+`targets`      |          | An optional list of resource addresses to target. Should be a list of strings separated by new lines.           | string |
 `wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `false`
 `tf-vars`      |          | The contents of a auto.tfvars file that will be uploaded to Terraform Cloud.                                    | string |
 

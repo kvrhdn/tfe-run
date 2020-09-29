@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	tferun "github.com/kvrhdn/go-tfe-run"
 	"github.com/kvrhdn/tfe-run/gha"
@@ -19,6 +20,7 @@ type input struct {
 	Directory         string
 	Speculative       bool
 	Type              string
+	Targets           string
 	WaitForCompletion bool   `gha:"wait-for-completion"`
 	TfVars            string `gha:"tf-vars"`
 }
@@ -59,6 +61,7 @@ func main() {
 		Message:           notEmptyOrNil(input.Message),
 		Directory:         notEmptyOrNil(input.Directory),
 		Type:              runType,
+		TargetAddrs:       notAllEmptyOrNil(strings.Split(input.Targets, "\n")),
 		WaitForCompletion: input.WaitForCompletion,
 		TfVars:            notEmptyOrNil(input.TfVars),
 	}
@@ -101,6 +104,15 @@ func notEmptyOrNil(s string) *string {
 		return nil
 	}
 	return &s
+}
+
+func notAllEmptyOrNil(slice []string) []string {
+	for _, s := range slice {
+		if s != "" {
+			return slice
+		}
+	}
+	return nil
 }
 
 func exitWithError(err error) {

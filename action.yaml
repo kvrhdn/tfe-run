@@ -32,6 +32,11 @@ inputs:
       The type of run, allowed options are 'plan', 'apply' and 'destroy'.
     required: false
     default: 'apply'
+  targets:
+    description: |
+      An optional list of resource addresses to target. Should be list separated by newlines.
+    required: false
+    default: ''
   wait-for-completion:
     description: |
       Whether we should wait for the plan or run to be applied. This will block until the run is finished. Defaults to true.

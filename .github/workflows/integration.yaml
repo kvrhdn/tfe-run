@@ -91,6 +91,9 @@ jobs:
           workspace: tfe-run_integration
           message: "Integration run ${{ github.run_number }} - destroy"
           type: destroy
+          targets: |
+            aws_s3_bucket_object.index
+            aws_s3_bucket_object.error
           wait-for-completion: true
           tf-vars: |
             run_number = ${{ github.run_number }}
