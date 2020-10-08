@@ -14,15 +14,16 @@ jobs:
       - uses: kvrhdn/gha-buildevents@main
         with:
           apikey: ${{ secrets.BUILDEVENT_APIKEY }}
-          dataset: tfe-run_integration
+          dataset
+          : tfe-run_integration
           job-status: ${{ job.status }}
 
       - uses: actions/checkout@v2
 
       - name: Start step 'speculative-plan'
         run: |
-          echo ::set-env name=STEP_ID::0
-          echo ::set-env name=STEP_START::$(date +%s)
+          echo "STEP_ID=0" >> $GITHUB_ENV
+          echo "STEP_START=$(date +%s)" >> $GITHUB_ENV
 
       - uses: ./
         with:
@@ -46,8 +47,8 @@ jobs:
 
       - name: Start step 'apply'
         run: |
-          echo ::set-env name=STEP_ID::1
-          echo ::set-env name=STEP_START::$(date +%s)
+          echo "STEP_ID=1" >> $GITHUB_ENV
+          echo "STEP_START=$(date +%s)" >> $GITHUB_ENV
 
       - uses: ./
         with:
@@ -82,8 +83,8 @@ jobs:
 
       - name: Start step 'destroy'
         run: |
-          echo ::set-env name=STEP_ID::2
-          echo ::set-env name=STEP_START::$(date +%s)
+          echo "STEP_ID=2" >> $GITHUB_ENV
+          echo "STEP_START=$(date +%s)" >> $GITHUB_ENV
 
       - uses: ./
         with:
