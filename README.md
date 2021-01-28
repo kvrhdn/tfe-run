@@ -50,8 +50,10 @@ Full option list:
     message: |
       Run triggered using tfe-run (commit: ${{ github.SHA }})
 
-    # The directory that is uploaded to Terraform Enterprise, defaults to the
-    # repository root. Respsects .terraformignore.
+    # The directory that is uploaded to Terraform Cloud/Enterprise, defaults
+    # to the repository root. Respsects .terraformignore. Note: this is
+    # prefixed to the "Terraform Working Directory" in the remote workspace
+    # settings.
     directory: integration/
 
     # The type of run, allowed options are 'plan', 'apply' and 'destroy'.
@@ -86,7 +88,7 @@ Name           | Required | Description                                         
 `organization` |          | Name of the organization on Terraform Cloud.                                                                    | string | The repository owner
 `workspace`    | yes      | Name of the workspace on Terraform Cloud.                                                                       | string |
 `message`      |          | Optional message to use as name of the run.                                                                     | string | _Queued by GitHub Actions (commit: $GITHUB_SHA)_
-`directory`    |          | The directory that is uploaded to Terraform Enterprise, defaults to repository root. Respects .terraformignore. | string | `./`
+`directory`    |          | The directory that is uploaded to Terraform Cloud/Enterprise, defaults to repository root. Respects .terraformignore. Note: this is prefixed to the "Terraform Working Directory" in the remote workspace settings. | string | `./`
 `type`         |          | The type of run, allowed options are 'plan', 'apply' and 'destroy'.                                             | string | `apply`
 `targets`      |          | An optional list of resource addresses to target. Should be a list of strings separated by new lines.           | string |
 `wait-for-completion` |   | Whether we should wait for the plan or run to be applied. This will block until the run is finished.            | string | `false`
