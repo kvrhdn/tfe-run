@@ -24,8 +24,8 @@ github.com/kvrhdn/go-tfe-run v0.3.2 h1:WIUj2tvRld4hRMBiGlZLgen//ZkmDAs3DCXdExEir
 github.com/kvrhdn/go-tfe-run v0.3.2/go.mod h1:JUOSBXuKbMsywJlfBUPnFBslitAGllbd0aVQDMQJyqQ=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/sethvargo/go-githubactions v0.2.0 h1:CKdUfKUJvqqYz7/7l36K2DmsP5JZPycnvjfT5Ae7BVE=
-github.com/sethvargo/go-githubactions v0.2.0/go.mod h1:ugCoIFQjs7HxIwwYiY7ty6H9T+7Z4ey481HxqA3VRKE=
+github.com/sethvargo/go-githubactions v0.3.0 h1:Mhcb6rXI5/7RCJC3ktVbgkQ2iqJRoO8HjwpqD0eGPPQ=
+github.com/sethvargo/go-githubactions v0.3.0/go.mod h1:ugCoIFQjs7HxIwwYiY7ty6H9T+7Z4ey481HxqA3VRKE=
 github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
