@@ -1,4 +1,4 @@
-FROM golang:1.15.7-alpine
+FROM golang:1.15.8-alpine
 WORKDIR /app
 ADD . /app
 RUN cd /app && go build -o app
